@@ -1,0 +1,79 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            Int               @id @default(autoincrement())
+  username      String
+  password_hash String
+  created_at    DateTime          @default(now())
+  documents     Document[]
+  workspaces    Workspace[]
+  members       WorkspaceMember[]
+}
+
+model Workspace {
+  id         Int               @id @default(autoincrement())
+  name       String
+  created_by Int
+  created_at DateTime          @default(now())
+  documents  Document[]
+  user       User              @relation(fields: [created_by], references: [id])
+  members    WorkspaceMember[]
+
+  @@unique([name, created_by])
+}
+
+model WorkspaceMember {
+  id           Int       @id @default(autoincrement())
+  workspace_id Int
+  user_id      Int
+  joined_at    DateTime  @default(now())
+  role         Roles
+  user         User      @relation(fields: [user_id], references: [id])
+  workspace    Workspace @relation(fields: [workspace_id], references: [id])
+
+  @@unique([workspace_id, user_id])
+}
+
+model Document {
+  id           Int       @id @default(autoincrement())
+  file_name    String
+  file_size    Int
+  mimetype     String
+  path         String
+  uploaded_by  Int
+  workspace_id Int
+  uploaded_at  DateTime  @default(now())
+  user         User      @relation(fields: [uploaded_by], references: [id])
+  workspace    Workspace @relation(fields: [workspace_id], references: [id])
+  chunks DocumentChunk[]
+}
+
+enum Roles {
+  MEMBER
+  ADMIN
+  OWNER
+}
+
+model DocumentChunk {
+  id           Int      @id @default(autoincrement())
+
+  document_id  Int
+  document     Document @relation(fields: [document_id], references: [id], onDelete: Cascade)
+
+  chunk_index  Int
+
+  content      String
+
+  embedding    Unsupported("vector(3072)")
+
+  created_at   DateTime @default(now())
+
+  @@index([document_id])
+}

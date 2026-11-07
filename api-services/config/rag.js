@@ -1,0 +1,5 @@
+const SIMILARITY_THRESHOLD=0.45;
+
+module.exports = {
+    SIMILARITY_THRESHOLD
+};

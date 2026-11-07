@@ -1,0 +1,40 @@
+services:
+  minio:
+    image: minio/minio
+    restart: unless-stopped
+    container_name: minio2
+
+    command: server /data --console-address ":9001"
+
+    environment:
+      MINIO_ROOT_USER: admin
+      MINIO_ROOT_PASSWORD: password1234
+
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+
+    volumes:
+      - minio_data:/data
+  redis:
+    image: redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+
+  postgres:
+    image: pgvector/pgvector:pg17
+    restart: unless-stopped
+
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 1234
+      POSTGRES_DB: AI_RAG
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  minio_data:
+  postgres_data:
